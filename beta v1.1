@@ -11,29 +11,31 @@ pygame.init()
 
 os.environ['SDL_VIDEO_CENTERED'] = '1'
 
-screen_width=800
-screen_height=500
+screen_width = 800
+screen_height = 500
 screen = pygame.display.set_mode((screen_width, screen_height), 0, 0)
 screen_game = pygame.display.set_mode((screen_width, screen_height), 0, 0)
 
+
 def text_format(message, textFont, textSize, textColor):
-    newFont=pygame.font.Font(textFont, textSize)
-    newText=newFont.render(message, 0, textColor)
+    newFont = pygame.font.Font(textFont, textSize)
+    newText = newFont.render(message, 0, textColor)
     return newText
 
-white=(255, 255, 255)
-black=(0, 0, 0)
-gray=(50, 50, 50)
-red=(255, 0, 0)
-green=(0, 255, 0)
-blue=(0, 0, 255)
-yellow=(255, 255, 0)
-lightblue = (134,134,255)
+
+white = (255, 255, 255)
+black = (0, 0, 0)
+gray = (50, 50, 50)
+red = (255, 0, 0)
+green = (0, 255, 0)
+blue = (0, 0, 255)
+yellow = (255, 255, 0)
+lightblue = (134, 134, 255)
 
 font = None
 
 clock = pygame.time.Clock()
-FPS=30
+FPS = 30
 # background = transform.scale(image.load("all/img/bg.jpg"), (800, 500))
 
 # window settings
@@ -42,9 +44,10 @@ logiks = 100
 
 tolkaninfo = False
 
+
 # sprites
 class HedgeHog(sprite.Sprite):
-    def __init__(self,health,age, tolkan, days_alive,xcor,ycor,image):
+    def __init__(self, health, age, tolkan, days_alive, xcor, ycor, image):
         self.health = health
         self.age = age
         self.days_alive = days_alive
@@ -52,94 +55,88 @@ class HedgeHog(sprite.Sprite):
         self.xcor = xcor
         self.ycor = ycor
         self.image = image
-        
-        
+
     def reset(self):
-        screen.blit(self.image,(xcor,ycor))
-        
-        
+        screen.blit(self.image, (self.xcor, self.ycor))
+
     def is_tolkan_full(self):
         global tolkaninfo
         if self.tolkan:
-            self.health -=1
-            
+            self.health -= 1
 
     def health(self):
         if self.health == 0:
             pass
-            
-        
-# Game
-# main menu
-def main_menu():
-    game = True
-    cont_open = False
-    selected = "start"
 
-    while game:
+
+# Game
+game_screen = False
+game = True
+cont_open = False
+selected = "start"
+# main menu
+while game:
+    if game_screen == False:
         clock.tick(FPS)
-        pygame.display.set_caption("Tamagocii")  
+        pygame.display.set_caption("Tamagocii")
 
         # Main Menu UI
         screen.fill(lightblue)
-        
-        logimage = transform.scale(image.load('all/images/logo.jpg'), (200, 150))
-        title=text_format("Tamagoci", font, 90, yellow)
-        if selected=="start":
-            text_start=text_format("START", font, 75, yellow)
+
+        #logimage = transform.scale(image.load('all/images/logo.jpg'), (200, 150))
+        title = text_format("Tamagoci", font, 90, yellow)
+        if selected == "start":
+            text_start = text_format("START", font, 75, yellow)
         else:
             text_start = text_format("START", font, 75, black)
-        if selected=="quit":
-            text_quit=text_format("QUIT", font, 75, yellow)
+        if selected == "quit":
+            text_quit = text_format("QUIT", font, 75, yellow)
         else:
             text_quit = text_format("QUIT", font, 75, black)
-        if selected=="control":
-            text_control=text_format("CONTROL", font, 75, yellow)
+        if selected == "control":
+            text_control = text_format("CONTROL", font, 75, yellow)
         else:
             text_control = text_format("CONTROL", font, 75, black)
-        if selected=="return":
-                text_return=text_format("return", font, 75, yellow)
+        if selected == "return":
+            text_return = text_format("return", font, 75, yellow)
         else:
             text_return = text_format("return", font, 75, black)
 
         # controll text
-        movement_text = text_format('To see info press : "TAB"', font, 35, black) #TAB
-        next_page_text = text_format('To see info press', font, 35, black) # 
+        movement_text = text_format('To see info press : "TAB"', font, 35, black)  # TAB
+        next_page_text = text_format('To see info press', font, 35, black)  #
 
-
-        
-        title_rect=title.get_rect()
-        start_rect=Rect(screen_width/2, 240, 100, 40)
-        quit_rect = Rect(screen_width/2, 360,100, 40)
-        control_rect = Rect(screen_width/2, 300, 100, 40)
-        return_rect = Rect( 50,20, 100, 40)
+        title_rect = title.get_rect()
+        start_rect = Rect(screen_width / 2.3, 240, 100, 40)
+        quit_rect = Rect(screen_width / 2.3, 360, 100, 40)
+        control_rect = Rect(screen_width / 2.3, 300, 100, 40)
+        return_rect = Rect(50, 20, 100, 40)
 
         # Main Menu Text
         if cont_open == False:
-            screen.blit(logimage, (screen_width/5 - (title_rect[2]/2), 80))
-            screen.blit(title, (screen_width/2 - (title_rect[2]/2), 80))
-            screen.blit(text_start, ((screen_width/2 - (start_rect[2]/2), 240)))
-            screen.blit(text_control, (screen_width / 2 - (quit_rect[2] / 2), 300))
-            screen.blit(text_quit, (screen_width / 2 - (start_rect[2] / 2), 360))
+            #screen.blit(logimage, (screen_width / 5 - (title_rect[2] / 2), 80))
+            screen.blit(title, (screen_width / 2 - (title_rect[2] / 2), 80))
+            screen.blit(text_start, ((screen_width / 2.3 - (start_rect[2] / 2), 240)))
+            screen.blit(text_control, (screen_width / 2.3 - (quit_rect[2] / 2), 300))
+            screen.blit(text_quit, (screen_width / 2.3 - (start_rect[2] / 2), 360))
         elif cont_open:
             # hide text
-            title_rect=title.get_rect()
-            start_rect=Rect(screen_width/2, 240, 0, 0)
-            quit_rect = Rect(screen_width/2, 360,0, 0)
-            control_rect = Rect(screen_width/2, 300, 0, 0)
-            return_rect = Rect( 50,20, 100, 40)
+            title_rect = title.get_rect()
+            start_rect = Rect(screen_width / 2, 240, 0, 0)
+            quit_rect = Rect(screen_width / 2, 360, 0, 0)
+            control_rect = Rect(screen_width / 2, 300, 0, 0)
+            return_rect = Rect(50, 20, 100, 40)
 
             # show controll_menu
-            screen.blit(text_return, (50,20,))
-            screen.blit(movement_text, (70,70))
-            screen.blit(next_page_text, (70,100))
-            
+            screen.blit(text_return, (50, 20,))
+            screen.blit(movement_text, (70, 70))
+            screen.blit(next_page_text, (70, 100))
+
         # elif selected=='start':
         #     screen_game.blit()
 
-
         for event in pygame.event.get():
-            if event.type==pygame.QUIT:
+            if event.type == pygame.QUIT:
                 game = False
             mouse_pos = pygame.mouse.get_pos()
             if start_rect.collidepoint(mouse_pos):
@@ -155,9 +152,7 @@ def main_menu():
                 mouse_pos = event.pos
                 if start_rect.collidepoint(mouse_pos):
                     selected = "start"
-                    game = False
-                    pygame.quit()
-                    tomagoci()
+                    game_screen = True
                 if quit_rect.collidepoint(mouse_pos):
                     selected = "quit"
                     game = False
@@ -167,18 +162,6 @@ def main_menu():
                 if return_rect.collidepoint(mouse_pos):
                     selected = "return"
                     cont_open = False
-        pygame.display.update()
-
-def tomagoci():
-    game_on = True
-    while game_on:
-        
-        for event in pygame.event.get():
-            if event.type==pygame.QUIT:
-                game_on = False
-                
-        next_page_text = text_format('To see info press', font, 35, black) # 
-        screen_game.blit(next_page_text, (screen_width/5 - (next_page_text.get_rect()[2]/2), 80))
-        pygame.display.update()
-        
-main_menu()
+    else:
+        pass
+    pygame.display.update()
