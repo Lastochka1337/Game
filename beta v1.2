@@ -1,0 +1,202 @@
+def text_format(message, textFont, textSize, textColor):
+    newFont = pygame.font.Font(textFont, textSize)
+    newText = newFont.render(message, 0, textColor)
+    return newText
+
+
+white = (255, 255, 255)
+black = (0, 0, 0)
+gray = (50, 50, 50)
+red = (255, 0, 0)
+green = (0, 255, 0)
+blue = (0, 0, 255)
+yellow = (255, 255, 0)
+lightblue = (134, 134, 255)
+
+font = None
+
+clock = pygame.time.Clock()
+FPS = 30
+background = transform.scale(image.load("all/images/bg.png"), (800, 500))
+right_sign = transform.scale(image.load('all/images/right.png' ), (65,65))
+left_sign = transform.scale(image.load('all/images/left.png'), (65,65))
+right_sign_hover = transform.scale(image.load('all/images/right_hover.png' ), (65,65))
+left_sign_hover = transform.scale(image.load('all/images/left_hover.png'), (65,65))
+# window settings
+game = True
+logiks = 100
+
+tolkaninfo = 0
+
+
+# sprites
+class GameSprite(sprite.Sprite):
+    def __init__(self,xcor, ycor, image,width,height):
+        self.rect.x = xcor
+        self.rect.y = ycor
+        self.width = width
+        self.height = height
+        self.image = transform.scale(image, (self.width, self.height))
+
+        def reset(self):
+            screen.blit(self.image, (self.rect.y, self.rect.y))
+
+        
+        
+class HedgeHog(GameSprite):
+    def __init__(self,xcor, ycor, image, width, height, tolkan, health, days_alive, age):
+        super().__init__(xcor, ycor, image,width,height)
+        self.health = health
+        self.age = age
+        self.days_alive = days_alive
+        self.tolkan = tolkan
+
+    def reset(self):
+        screen.blit(self.image, (self.rect.y, self.rect.y))
+
+    def is_tolkan_full(self):
+        global tolkaninfo
+        if self.tolkan >= 100:
+            self.health -= 1
+
+    def health(self):
+        if self.health == 0:
+            pass
+
+food_group = sprite.Group()
+food_market = sprite.Group()
+class Food(GameSprite):
+    def __init__(self,xcor, ycor, image,width,height, food_status):
+        super().__init__(xcor, ycor, image,width,height)
+        self.food_status = food_status
+    def next(self):
+        pass
+    def previous(self):
+        pass
+      
+
+# Game
+game_screen = False
+game = True
+cont_open = False
+selected = ""
+selected_sign = ""
+# main menu
+while game:
+    clock.tick(FPS)
+    pygame.display.set_caption("Tamagocii")
+    if game_screen == False:
+
+        # Main Menu UI
+        screen.blit(background,(0,0))
+        text_lan = text_format("ЯЗЫК", font, 55, black)
+
+        title = text_format("Tamagoci", font, 90, yellow)
+        if selected == "start":
+            text_start = text_format("НОВАЯ ИГРА", font, 55, yellow)
+        else:
+            text_start = text_format("НОВАЯ ИГРА", font, 55, black)
+        if selected == "quit":
+            text_quit = text_format("ВЫХОД", font, 55, yellow)
+        else:
+            text_quit = text_format("ВЫХОД", font, 55, black)
+        if selected == "control":
+            text_control = text_format("УПРАВЛЕНИЕ", font, 55, yellow)
+        else:
+            text_control = text_format("УПРАВЛЕНИЕ", font, 55, black)
+        if selected == "return":
+            text_return = text_format("назад", font, 55, yellow)
+        else:
+            text_return = text_format("назад", font, 55, black)
+
+        # controll text
+        movement_text = text_format('To see info press : "TAB"', font, 35, black)  # TAB
+        next_page_text = text_format('To see info press', font, 35, black)  #
+
+        title_rect = title.get_rect()
+        start_rect = Rect(screen_width / 2.3, 420, 200, 40)
+        quit_rect = Rect(screen_width / 5, 420, 120, 40)
+        control_rect = Rect(screen_width / 1.4 , 420, 200, 40)
+        return_rect = Rect(50, 20, 150, 40)
+
+        # Main Menu Text
+        if cont_open == False:
+            screen.blit(title, (screen_width / 2 - (title_rect[2] / 2), 80))
+            screen.blit(text_quit, ((screen_width / 5 - (start_rect[2] / 2), 420)))
+            screen.blit(text_control, (screen_width / 1.4 - (quit_rect[2] / 2), 420))
+            screen.blit(text_start, (screen_width / 2.35 - (start_rect[2] / 2), 420))
+        elif cont_open:
+            # hide text
+            title_rect = title.get_rect()
+            start_rect = Rect(screen_width / 2, 240, 0, 0)
+            quit_rect = Rect(screen_width / 2, 360, 0, 0)
+            control_rect = Rect(screen_width / 2, 300, 0, 0)
+            return_rect = Rect(50, 20, 100, 40)
+
+            # show controll_menu
+            screen.blit(text_return, (50, 20,))
+            screen.blit(movement_text, (70, 70))
+            screen.blit(next_page_text, (70, 100))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                game = False
+            mouse_pos = pygame.mouse.get_pos()
+            if start_rect.collidepoint(mouse_pos):
+                selected = "start"
+            if quit_rect.collidepoint(mouse_pos):
+                selected = "quit"
+            if control_rect.collidepoint(mouse_pos):
+                selected = "control"
+            if return_rect.collidepoint(mouse_pos):
+                selected = "return"
+
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                mouse_pos = event.pos
+                if start_rect.collidepoint(mouse_pos):
+                    selected = "start"
+                    game_screen = True
+                if quit_rect.collidepoint(mouse_pos):
+                    selected = "quit"
+                    game = False
+                if control_rect.collidepoint(mouse_pos):
+                    selected = "control"
+                    cont_open = True
+                if return_rect.collidepoint(mouse_pos):
+                    selected = "return"
+                    cont_open = False
+
+        pygame.display.update()
+    # game
+    else:
+        if selected_sign == 'left':
+            screen.blit(left_sign_hover, (screen_width / 3, 420))
+        else:
+            screen.blit(left_sign, (screen_width / 3, 420))
+        if selected_sign == 'right':
+            screen.blit(right_sign, (screen_width / 1.7, 420))
+        else:
+            screen.blit(right_sign, (screen_width / 1.7, 420))
+
+        # hide text
+        title_rect = title.get_rect()
+        start_rect = Rect(screen_width / 2, 240, 0, 0)
+        quit_rect = Rect(screen_width / 2, 360, 0, 0)
+        control_rect = Rect(screen_width / 2, 300, 0, 0)
+        return_rect = Rect(50, 20, 0, 0) 
+        screen.blit(background, (0, 0))
+        
+        left_rect = Rect((screen_width / 3,420,65,65))
+        right_rect = Rect((screen_width / 1.7,420,65,65))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                game = False
+            mouse_pos = pygame.mouse.get_pos()
+            if right_rect.collidepoint(mouse_pos):
+                print('Hi')
+                selected_sign = 'right'
+            if selected_sign == 'right':
+                print('Hello')
+                selected_sign = 'right'
+        pygame.display.update()
