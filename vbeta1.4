@@ -4,8 +4,7 @@ import pygame
 from pygame import *
 from pygame.locals import *
 from random import randint
-from time import time
-
+import time
 # inits
 pygame.init()
 
@@ -30,6 +29,8 @@ red = (255, 0, 0)
 green = (0, 255, 0)
 blue = (0, 0, 255)
 yellow = (255, 255, 0)
+brown = (148, 93, 25)
+happy_c = (214, 182, 24)
 #lightblue = (134, 134, 255)
 
 font = None
@@ -39,29 +40,36 @@ FPS = 30
 
 path = "all/images/"
 
-'''background = transform.scale(image.load("all/images/bg.png"), (800, 500))
-game_background = transform.scale(image.load("all/images/game_bg.png"), (800, 500))'''
 backrounds = [transform.scale(image.load(path + "bg.png"), (800, 500)),transform.scale(image.load(path + "game_bg.png"), (800, 500))]
 right_sign = transform.scale(image.load(path + 'right.png'), (65, 65))
 left_sign = transform.scale(image.load(path + 'left.png'), (65, 65))
 right_sign_hover = transform.scale(image.load(path + 'right_hover.png'), (65, 65))
 left_sign_hover = transform.scale(image.load(path + 'left_hover.png'), (65, 65))
-
+remka = transform.scale(image.load(path + 'remka.png'), (75, 75))
 # food images
 bug = transform.scale(image.load(path + 'bug.png'),(50,50))
 sworm = transform.scale(image.load(path + 'sworm.png'),(50,50))
 red_apple = transform.scale(image.load(path + 'red_apple.png'),(50,50))
-#yellow_apple = transform.scale(image.load(path + 'yellow_apple.png'),(50,50))
+yellow_apple = transform.scale(image.load(path + 'yellow_apple.png'),(50,50))
 mushroom = transform.scale(image.load(path + 'mushroom.png'),(50,50))
 banana = transform.scale(image.load(path + 'banana.png'),(50,50))
-
+heart = transform.scale(image.load(path + 'heart.png'), (50,50))
+starve_e = transform.scale(image.load(path + 'food.png'), (75, 75))
+smile = transform.scale(image.load(path + 'smile.png'), (75, 75))
 # window settings
 game = True
 logiks = 100
 
 tolkaninfo = 0
 
+starve_p = 75
+happiness_p = 75
+healthy_p = 75
 
+# time
+tick = 1
+is_ate = False
+minus_st = False
 # sprites
 class GameSprite(sprite.Sprite):
     def __init__(self, player_image, player_x, player_y, width, height):
@@ -77,23 +85,29 @@ class GameSprite(sprite.Sprite):
         screen.blit(self.image, (self.rect.x, self.rect.y))
 
 class HedgeHog(GameSprite):
-    def __init__(self, player_image, player_x, player_y, width, height,tolkan, health, days_alive, age):
+    def __init__(self, player_image, player_x, player_y, width, height,tolkan, days_alive, age):
         super().__init__(player_image, player_x, player_y, width, height)
-        self.health = health
         self.age = age
         self.days_alive = days_alive
         self.tolkan = tolkan
+    # def starving(self):
+    #     global tick, is_ate, starve_p, healthy_p, minus_st
+    #     global check_time
+            
+    # def eating(self):
+    #     pass
+    
+    
+    # def is_tolkan_full(self):
+    #     global tolkaninfo
+    #     if self.tolkan >= 100:
+    #         self.health -= 1
 
-    '''def is_tolkan_full(self):
-        global tolkaninfo
-        if self.tolkan >= 100:
-            self.health -= 1'''
+    # '''def health(self):
+    #     if self.health == 0:
+    #         pass'''
 
-    '''def health(self):
-        if self.health == 0:
-            pass'''
-
-hedgehog = HedgeHog(path+'happy_h.png',250,180,250,250,0,0,0,0)
+hedgehog = HedgeHog(path+'happy_h.png',250,180,250,250,0,0,0)
 
 food_group = sprite.Group()
 food_market = sprite.Group()
@@ -106,12 +120,15 @@ class Food(GameSprite):
         self.food_status = food_status
 
 food = Food(path+'yellow_apple.png',screen_width / 2.5, 360,150,150,0)
-food2 = Food(path+'red_apple.png',screen_width / 2.5, 360,150,150,0)
+food2 = Food(path + 'red_apple.png', screen_width / 2.5, 360, 150, 150, 0)
+food3 = Food(path + 'bug.png', screen_width / 2.5, 360, 150, 150, 0)
 
 food_group.add(food2)
 food_group.add(food)
+food_group.add(food3)
 
 # Game
+
 game_screen = False
 game = True
 cont_open = False
@@ -123,6 +140,7 @@ signs = [left_sign,left_sign_hover,right_sign,right_sign_hover]
 # main menu
 
 while game:
+    check_time = time.time()
     clock.tick(FPS)
     pygame.display.set_caption("Tamagocii")
     if game_screen == False:
@@ -209,8 +227,29 @@ while game:
         pygame.display.update()
     # game
     else:
-        screen.blit(backrounds[1],(0,0))
+        screen.blit(backrounds[1], (0, 0))
+        healthbar = pygame.draw.rect(screen, green, pygame.Rect(screen_width / 3.2 , 0, 75, healthy_p))
+        starve = pygame.draw.rect(screen, brown, pygame.Rect(screen_width / 2.2, 0, 75, starve_p))
+        happiness_bg = pygame.draw.rect(screen, happy_c, pygame.Rect(screen_width / 1.7, 0, 75, healthy_p))
+        health = Rect(screen_width / 2.2, 0, 75, 75)
+        happiness = Rect(screen_width / 1.7, 0,75, 75)
+        screen.blit(remka, (screen_width / 3.2, 0))
+        screen.blit(heart, (screen_width /3.05, 17.5))
+        screen.blit(remka, (screen_width / 2.2, 0))
+        screen.blit(starve_e, (screen_width/2.2, 5))
+        screen.blit(remka, (screen_width / 1.7, 0))
+        screen.blit(smile, (screen_width/ 1.7, 2))
         hedgehog.reset()
+
+        if minus_st == False:
+            now = int(time.time()) 
+            end = now + tick
+            minus_st = True
+        if minus_st == True:
+            if check_time == end:
+                starve_p -= 20
+        if starve_p <= 0:
+            healthy_p -= 5
 
         if selected_sign == 'left':
             screen.blit(signs[1], (screen_width / 3, 420))
@@ -288,4 +327,5 @@ while game:
                             i.rect.x = 900
                             i.rect.y = 600
                         food_index -= 1
+        #pygame.display.flip()
         pygame.display.update()
