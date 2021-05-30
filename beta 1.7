@@ -1,0 +1,668 @@
+# imports
+import os
+import pygame
+from pygame import *
+from pygame.locals import *
+from random import randint
+import time
+
+# inits
+pygame.init()
+mixer.init()
+
+os.environ['SDL_VIDEO_CENTERED'] = '1'
+
+screen_width = 800
+screen_height = 500
+screen = pygame.display.set_mode((screen_width, screen_height), 0, 0)
+screen_game = pygame.display.set_mode((screen_width, screen_height), 0, 0)
+
+
+def text_format(message, textFont, textSize, textColor):
+    newFont = pygame.font.Font(textFont, textSize)
+    newText = newFont.render(message, 0, textColor)
+    return newText
+
+
+white = (255, 255, 255)
+black = (0, 0, 0)
+gray = (50, 50, 50)
+red = (255, 0, 0)
+green = (0, 255, 0)
+blue = (0, 0, 255)
+not_full_blue = (51, 172, 232)
+yellow = (255, 255, 0)
+brown = (148, 93, 25)
+happy_c = (214, 182, 24)
+# lightblue = (134, 134, 255)
+
+font = None
+
+clock = pygame.time.Clock()
+FPS = 30
+
+path = "all/images/"
+sound_path = "all/sounds/"
+
+backrounds = [transform.scale(image.load(path + "bg.png"), (800, 500)),
+              transform.scale(image.load(path + "game_bg.png"), (800, 500)),
+              transform.scale(image.load(path + "shop_bg.png"), (800, 500)),
+              transform.scale(image.load(path + "fridge_bg.png"), (800, 500)),
+              transform.scale(image.load(path + "pharmacy_bg.png"), (800, 500))]
+
+right_sign = transform.scale(image.load(path + 'right.png'), (65, 65))
+left_sign = transform.scale(image.load(path + 'left.png'), (65, 65))
+right_sign_hover = transform.scale(image.load(path + 'right_hover.png'), (65, 65))
+left_sign_hover = transform.scale(image.load(path + 'left_hover.png'), (65, 65))
+remka = transform.scale(image.load(path + 'remka.png'), (75, 75))
+shop_icon = transform.scale(image.load(path + 'shop_icon.png'), (75, 95))
+fridge_icon = transform.scale(image.load(path + 'fridge.png'), (75, 95))
+reg_poop = transform.scale(image.load(path + 'poop_reg.png'), (120,120))
+rare_poop = transform.scale(image.load(path + 'poop_rare.png'), (120,120))
+pharmacy_icon = transform.scale(image.load(path + 'pharmacy_icon.png'), (75, 95))
+
+privet = mixer.Sound(sound_path+"Privet .wav")
+hochu_est= mixer.Sound(sound_path+"Hoch kushat.wav")
+hochu_igrat = mixer.Sound(sound_path+"Hoch igrat.wav")
+hochu_spat = mixer.Sound(sound_path+"Hoch spat.wav")
+ploho = mixer.Sound(sound_path+"Ploho.wav")
+vkusno = mixer.Sound(sound_path+"Vkusno.wav")
+sonic_cost = mixer.Sound(sound_path+"Sonic.wav")
+spider_cost = mixer.Sound(sound_path+"Spiderman .wav")
+ezhik_cost = mixer.Sound(sound_path+"Ezhik.wav")
+mario_cost = mixer.Sound(sound_path+"Mario.wav")
+
+
+# food images
+bug = transform.scale(image.load(path + 'bug.png'), (120, 120))
+sworm = transform.scale(image.load(path + 'sworm.png'), (120, 120))
+red_apple = transform.scale(image.load(path + 'red_apple.png'), (120, 120))
+yellow_apple = transform.scale(image.load(path + 'yellow_apple.png'), (120, 120))
+mushroom = transform.scale(image.load(path + 'mushroom.png'), (120, 120))
+banana = transform.scale(image.load(path + 'banana.png'), (120, 120))
+heart = transform.scale(image.load(path + 'heart.png'), (50, 50))
+energy_ic = transform.scale(image.load(path + 'energy_ic.png'), (65, 65))
+starve_e = transform.scale(image.load(path + 'food.png'), (75, 75))
+smile = transform.scale(image.load(path + 'smile.png'), (75, 75))
+# window settings
+game = True
+logiks = 100
+
+tolkaninfo = 0
+# time
+tick = 15
+tick_h = 15
+is_ate = False
+minus_st = False
+minus_hp = False
+plus_hp = False
+reg_p_par = False
+rare_p_par = False
+
+ed50 = False
+ed25 = False
+ed0 = False
+
+# sprites
+class GameSprite(sprite.Sprite):
+    def __init__(self, player_image, player_x, player_y, width, height):
+        super().__init__()
+        self.width = width
+        self.height = height
+        self.image = transform.scale(image.load(player_image), (self.width, self.height))
+        self.rect = self.image.get_rect()
+        self.rect.x = player_x
+        self.rect.y = player_y
+
+    def reset(self):
+        screen.blit(self.image, (self.rect.x, self.rect.y))
+
+
+class HedgeHog(GameSprite):
+    def __init__(self, player_image, player_x, player_y, width, height, tolkan, days_alive, age):
+        super().__init__(player_image, player_x, player_y, width, height)
+        self.age = age
+        self.days_alive = days_alive
+        self.tolkan = tolkan
+    def ploho_func(self):
+        ploho.play()
+        self.image = transform.scale(image.load(path+'ploho_h.png'), (self.width, self.height))
+    # def starving(self):
+    #     global tick, is_ate, starve_p, healthy_p, minus_st
+    #     global check_time
+
+    # def eating(self):
+    #     pass
+
+    # def is_tolkan_full(self):
+    #     global tolkaninfo
+    #     if self.tolkan >= 100:
+    #         self.health -= 1
+
+    # '''def health(self):
+    #     if self.health == 0:
+    #         pass'''
+
+hedgehog = HedgeHog(path + 'happy_h.png', 250, 180, 250, 250, 0, 0, 0)
+
+food_group = sprite.Group()
+food_market = sprite.Group()
+
+food_index = 0
+
+privet.play()
+class Food(GameSprite):
+    def __init__(self, player_image, player_x, player_y, width, height, food_status):
+        super().__init__(player_image, player_x, player_y, width, height)
+        self.food_status = food_status
+
+    def eating(self):
+        global starve_p
+        global food_index
+        if self.rect.collidepoint(mouse_pos):
+            if starve_p < 75:
+                vkusno.play()
+                starve_p += self.food_status
+                spritegroup.remove(spritegroup[food_index])
+                #print(food_index)
+                if len(spritegroup) > 1 and food_index != 0:
+                    food_index -= 1
+                if len(spritegroup) > 1 and food_index == 0:
+                    food_index += 1
+
+                if starve_p > 75:
+                    starve_p = 75
+
+                if starve_p > 50:
+                    ed50 = False
+                    ed25 = False
+                    ed0 = False
+
+food = Food(path + 'yellow_apple.png', screen_width / 2.5, 360, 150, 150, 0)
+food2 = Food(path + 'red_apple.png', screen_width / 2.5, 360, 150, 150, 0)
+food3 = Food(path + 'bug.png', screen_width / 2.5, 360, 150, 150, 0)
+
+food_group.add(food2)
+food_group.add(food)
+food_group.add(food3)
+
+# Game
+
+shop_screen = False
+fridge_screen = False
+game_screen = False
+pharmacy_screen = False
+game = True
+cont_open = False
+sick = False
+
+selected = ""
+selected_sign = ""
+i = 0
+
+signs = [left_sign, left_sign_hover, right_sign, right_sign_hover]
+spritegroup = []
+
+
+# main menu
+
+while game:
+    clock.tick(FPS)
+    pygame.display.set_caption("Tamagocii")
+
+    if game_screen == False:
+        starve_p = 75
+        happiness_p = 75
+        healthy_p = 75
+        energy_p = 75
+
+        logiks = 100
+        # Main Menu UI
+        screen.blit(backrounds[0], (0, 0))
+
+        text_lan = text_format("ЯЗЫК", font, 55, black)
+
+        title = text_format("Tamagoci", font, 90, yellow)
+        if selected == "start":
+            text_start = text_format("НОВАЯ ИГРА", font, 55, yellow)
+        else:
+            text_start = text_format("НОВАЯ ИГРА", font, 55, black)
+        if selected == "quit":
+            text_quit = text_format("ВЫХОД", font, 55, yellow)
+        else:
+            text_quit = text_format("ВЫХОД", font, 55, black)
+        if selected == "control":
+            text_control = text_format("УПРАВЛЕНИЕ", font, 55, yellow)
+        else:
+            text_control = text_format("УПРАВЛЕНИЕ", font, 55, black)
+        if selected == "return":
+            text_return = text_format("назад", font, 55, yellow)
+        else:
+            text_return = text_format("назад", font, 55, black)
+
+        # controll text
+        movement_text = text_format('To see info press : "TAB"', font, 35, black)  # TAB
+        next_page_text = text_format('To see info press', font, 35, black)  #
+
+        title_rect = title.get_rect()
+        start_rect = Rect(screen_width / 2.3, 420, 200, 40)
+        quit_rect = Rect(screen_width / 5, 420, 120, 40)
+        control_rect = Rect(screen_width / 1.4, 420, 200, 40)
+        return_rect = Rect(50, 20, 150, 40)
+
+        # Main Menu Text
+        if cont_open == False:
+            screen.blit(title, (screen_width / 2 - (title_rect[2] / 2), 80))
+            screen.blit(text_quit, ((screen_width / 5 - (start_rect[2] / 2), 420)))
+            screen.blit(text_control, (screen_width / 1.4 - (quit_rect[2] / 2), 420))
+            screen.blit(text_start, (screen_width / 2.35 - (start_rect[2] / 2), 420))
+        elif cont_open:
+            # hide text
+            title_rect = title.get_rect()
+            start_rect = Rect(screen_width / 2, 240, 0, 0)
+            quit_rect = Rect(screen_width / 2, 360, 0, 0)
+            control_rect = Rect(screen_width / 2, 300, 0, 0)
+            return_rect = Rect(50, 20, 100, 40)
+
+            # show controll_menu
+            screen.blit(text_return, (50, 20,))
+            screen.blit(movement_text, (70, 70))
+            screen.blit(next_page_text, (70, 100))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                game = False
+            mouse_pos = pygame.mouse.get_pos()
+            if start_rect.collidepoint(mouse_pos):
+                selected = "start"
+            if quit_rect.collidepoint(mouse_pos):
+                selected = "quit"
+            if control_rect.collidepoint(mouse_pos):
+                selected = "control"
+            if return_rect.collidepoint(mouse_pos):
+                selected = "return"
+
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                mouse_pos = event.pos
+                if start_rect.collidepoint(mouse_pos):
+                    selected = "start"
+                    game_screen = True
+                if quit_rect.collidepoint(mouse_pos):
+                    selected = "quit"
+                    game = False
+                if control_rect.collidepoint(mouse_pos):
+                    selected = "control"
+                    cont_open = True
+                if return_rect.collidepoint(mouse_pos):
+                    selected = "return"
+                    cont_open = False
+
+        pygame.display.update()
+    # game
+    else:
+        check_time = time.time()
+        if minus_st == False:
+            now = int(time.time())
+            end = now + tick
+            minus_st = True
+        if minus_st == True:
+            if int(check_time) == end:
+                starve_p -= 3
+                minus_st = False
+
+        if sick == False:
+            sick_a = 0
+            now6 = int(time.time())
+            end6 = randint(150, 360) + now6
+            sick = True
+        if sick == True:
+            if int(check_time) == end6:
+                if sick_a == 0:
+                    hedgehog.ploho_func()
+                    sick_a = 1
+
+
+        if starve_p <= 0 or sick_a == 1 and minus_hp == False:
+            now2 = int(time.time())
+            end2 = now2 + tick_h
+            minus_hp = True
+
+        if starve_p <= 50 and ed50 == False:
+            hochu_est.play()
+            ed50 = True
+
+        if starve_p <= 25 and ed25 == False:
+            hochu_est.play()
+            ed25 = True
+
+        if starve_p <= 0 and ed0 == False:
+            hochu_est.play()
+            ed0 = True
+
+        if minus_hp == True:
+            if int(check_time) == end2:
+                healthy_p -= 5
+                minus_hp = False
+
+        if healthy_p <= 0:
+            healthy_p = 75
+            starve_p = 75
+            happiness_p = 75
+            game_screen = False
+
+        if plus_hp == False:
+            if starve_p >= 40:
+                now3 = int(time.time())
+                end3 = now3 + (tick - 1)
+                plus_hp = True
+            else:
+                pass
+
+        if plus_hp == True:
+            if healthy_p > 75:
+                healthy_p = 75
+                plus_hp = False
+            if check_time == end3:
+                healthy_p += 5
+
+
+        if shop_screen == False and fridge_screen == False and pharmacy_screen == False:
+            '''if reg_p_par == False:
+                now4 = int(time.time())
+                end4 = now4 + randint(30, 60)
+                ab = randint(20, 300)
+                reg_p_par = True
+
+            if reg_p_par == True:
+                if int(check_time) == end4:
+                    reg_poop_rect = Rect(ab, 300, 120, 120)
+                    screen.blit(reg_poop, (ab, 300))
+                    print('hi')
+                    if reg_poop_rect.collidepoint(mouse_pos):
+                        reg_p_par = False
+                        logiks += 5
+
+            if rare_p_par == False:
+                now5 = int(time.time())
+                end5 = now5 + randint(90, 120)
+                a = randint(20, 600)
+                rare_p_par = True
+
+            if rare_p_par == True:
+                if int(check_time) == end5:
+                    rare_poop_rect = Rect(a, 300, 120, 120)
+                    screen.blit(rare_poop, (a, 300))
+                    if rare_poop_rect.collidepoint(mouse_pos):
+                        rare_p_par = False
+                        logiks += 15'''
+            screen.blit(backrounds[1], (0, 0))
+            healthbar = pygame.draw.rect(screen, green, pygame.Rect(screen_width / 3.2, 0, 75, healthy_p))
+            starve = pygame.draw.rect(screen, brown, pygame.Rect(screen_width / 2.2, 0, 75, starve_p))
+            happiness_bg = pygame.draw.rect(screen, happy_c, pygame.Rect(screen_width / 1.7, 0, 75, happiness_p))
+            energy_bg = pygame.draw.rect(screen, not_full_blue, pygame.Rect(screen_width / 1.38, 0, 75, energy_p))
+
+            health = Rect(screen_width / 2.2, 0, 75, 75)
+            happiness = Rect(screen_width / 1.7, 0, 75, 75)
+            screen.blit(remka, (screen_width / 3.2, 0))
+            screen.blit(heart, (screen_width / 3.05, 17.5))
+            screen.blit(remka, (screen_width / 2.2, 0))
+            screen.blit(remka, (screen_width / 1.38, 0))
+            screen.blit(starve_e, (screen_width / 2.2, 5))
+            screen.blit(remka, (screen_width / 1.7, 0))
+            screen.blit(smile, (screen_width / 1.7, 2))
+            screen.blit(energy_ic, (screen_width / 1.38, 6))
+            screen.blit(shop_icon, (670, 400))
+            screen.blit(fridge_icon, (screen_width / 10, 400))
+            screen.blit(pharmacy_icon, (580, 400))
+            hedgehog.reset()
+            for i in spritegroup:
+                if i == spritegroup[food_index]:
+                    i.reset()
+
+            for k in spritegroup:
+                if k != spritegroup[food_index]:
+                    k.rect.x = 900
+                    k.rect.y = 600
+
+            if selected_sign == 'left':
+                screen.blit(signs[1], (screen_width / 3, 420))
+            else:
+                screen.blit(signs[0], (screen_width / 3, 420))
+            if selected_sign == 'right':
+                screen.blit(signs[3], (screen_width / 1.7, 420))
+            else:
+                screen.blit(signs[2], (screen_width / 1.7, 420))
+
+            # hide text
+            food_index2 = 0
+            #food_group.draw(screen)
+            title_rect = title.get_rect()
+            start_rect = Rect(screen_width / 2, 240, 0, 0)
+            quit_rect = Rect(screen_width / 2, 360, 0, 0)
+            control_rect = Rect(screen_width / 2, 300, 0, 0)
+            return_rect = Rect(50, 20, 0, 0)
+            # screen.blit(background, (0, 0))
+
+            left_rect = Rect((screen_width / 3, 420, 65, 65))
+            right_rect = Rect((screen_width / 1.7, 420, 65, 65))
+            shop_rect = Rect((670, 400, 75, 95))
+            pharmacy_rect = Rect((580, 400, 75, 95))
+            fridge_rect = Rect((screen_width / 10, 400, 75, 95))
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    game = False
+                mouse_pos = pygame.mouse.get_pos()
+                if right_rect.collidepoint(mouse_pos):
+                    #print('Hi')
+                    selected_sign = 'right'
+                if left_rect.collidepoint(mouse_pos):
+                    #print('Hello')
+                    selected_sign = 'left'
+                if shop_rect.collidepoint(mouse_pos):
+                    selected = 'shop'
+                if fridge_rect.collidepoint(mouse_pos):
+                    selected = 'fridge'
+                if pharmacy_rect.collidepoint(mouse_pos):
+                    selected = 'pharmacy'
+                if left_rect.collidepoint(mouse_pos) == False and right_rect.collidepoint(mouse_pos) == False:
+                    selected_sign = ''
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    mouse_pos = event.pos
+                    if selected == 'pharmacy':
+                        pharmacy_screen = True
+                    if selected == 'shop':
+                        shop_screen = True
+                    if selected == 'fridge':
+                        fridge_screen = True
+                    if selected_sign == 'right':
+                        if len(spritegroup) == 0:
+                            pass
+                        elif (food_index + 1) == len(spritegroup):
+                            food_index = 0
+                            food_index2 = 0
+                            for i in spritegroup:
+                                i.rect.x = screen_width / 2.5
+                                i.rect.y = 360
+
+                        else:
+                            food_index += 1
+                            spritegroup[food_index].rect.x = screen_width / 2.5
+                            spritegroup[food_index].rect.y = 360
+                            spritegroup[food_index].reset()
+                            for j in spritegroup:
+                                if j != spritegroup[food_index]:
+                                    j.rect.x = 900
+                                    j.rect.y = 600
+                    elif selected_sign == 'left':
+                        if len(spritegroup) == 0:
+                            pass
+                        elif food_index < 0:
+                            food_index = len(spritegroup) - 1
+                            food_index2 = 0
+                            for i in spritegroup:
+                                i.rect.x = screen_width / 2.5
+                                i.rect.y = 360
+                                break
+                        else:
+                            food_index -= 1
+                            spritegroup[food_index].rect.x = screen_width / 2.5
+                            spritegroup[food_index].rect.y = 360
+                            spritegroup[food_index].reset()
+                            for j in spritegroup:
+                                if j != spritegroup[food_index]:
+                                    j.rect.x = 900
+                                    j.rect.y = 600
+                    if len(spritegroup) > 0:
+                        spritegroup[food_index].eating()
+
+
+            pygame.display.flip()
+        elif shop_screen == True:
+            screen.blit(backrounds[2], (0, 0))
+            if selected == "return":
+                text_return = text_format("назад", font, 55, yellow)
+            else:
+                text_return = text_format("назад", font, 55, black)
+            logiks_text = text_format("логики: "+str(logiks), font, 55, black)
+            price_ban = text_format('20', font, 45, black)
+            price_rp = text_format('10', font, 45, black)
+            price_yp = text_format('10', font, 45, black)
+            price_bug = text_format('40', font, 45, black)
+            price_mush = text_format('20', font, 45, black)
+            price_sw = text_format('30', font, 45, black)
+            screen.blit(logiks_text,(500,0))
+            screen.blit(text_return, (50, 20,))
+            # rects
+            return_rect = Rect(50, 20, 100, 40)
+            banana_rect = Rect(180,220, 120, 120)
+            red_apple_rect = Rect(180, 100, 120, 120)
+            yellow_apple_rect = Rect(340, 100, 120, 120)
+            mushroom_rect = Rect(500, 100, 120, 120)
+            sworm_rect = Rect(340, 220, 120, 120)
+            bug_rect = Rect(500, 230, 120, 120)
+
+            screen.blit(banana,(180,220))
+            screen.blit(price_ban, (190, 240))
+            #
+            screen.blit(red_apple, (180, 100))
+            screen.blit(price_rp, (190, 120))
+            #
+            screen.blit(yellow_apple, (340, 100))
+            screen.blit(price_yp, (350, 120))
+            #
+            screen.blit(mushroom, (500, 100))
+            screen.blit(price_mush, (510, 120))
+            #
+            screen.blit(sworm, (340, 220))
+            screen.blit(price_sw, (350, 240))
+            #
+            screen.blit(bug, (500, 230))
+            screen.blit(price_bug, (510, 240))
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    game = False
+                mouse_pos = pygame.mouse.get_pos()
+                if return_rect.collidepoint(mouse_pos):
+                    selected = 'return'
+                if banana_rect.collidepoint(mouse_pos):
+                    selected = 'banana'
+                if red_apple_rect.collidepoint(mouse_pos):
+                    selected = 'red_apple'
+                if yellow_apple_rect.collidepoint(mouse_pos):
+                    selected = 'yellow_apple'
+                if bug_rect.collidepoint(mouse_pos):
+                    selected = 'bug'
+                if mushroom_rect.collidepoint(mouse_pos):
+                    selected = 'mushroom'
+                if sworm_rect.collidepoint(mouse_pos):
+                    selected = 'sworm'
+                if sworm_rect.collidepoint(mouse_pos) == False and mushroom_rect.collidepoint(mouse_pos) == False and bug_rect.collidepoint(mouse_pos) == False and yellow_apple_rect.collidepoint(mouse_pos) == False and red_apple_rect.collidepoint(mouse_pos) == False and banana_rect.collidepoint(mouse_pos) == False and return_rect.collidepoint(mouse_pos) == False:
+                    selected = ''
+
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    mouse_pos = event.pos
+                    if selected == 'return':
+                        shop_screen = False
+                    if len(spritegroup) != 6:
+                        if selected == 'banana':
+                            if logiks >= 20:
+                                logiks -= 20
+                                food = Food(path + 'banana.png', screen_width / 2.5, 360, 150, 150, 10)
+                                spritegroup.append(food)
+                            else:
+                                pass
+                        if selected == 'mushroom':
+                            if logiks >= 20:
+                                logiks -= 20
+                                food = Food(path + 'mushroom.png', screen_width / 2.5, 360, 150, 150, 10)
+                                spritegroup.append(food)
+                            else:
+                                pass
+                        if selected == 'red_apple':
+                            if logiks >= 10:
+                                logiks -= 10
+                                food = Food(path + 'red_apple.png', screen_width / 2.5, 360, 150, 150, 5)
+                                spritegroup.append(food)
+                            else:
+                                pass
+                        if selected == 'yellow_apple':
+                            if logiks >= 10:
+                                logiks -= 10
+                                food = Food(path + 'yellow_apple.png', screen_width / 2.5, 360, 150, 150, 5)
+                                spritegroup.append(food)
+                            else:
+                                pass
+                        if selected == 'bug':
+                            if logiks >= 40:
+                                logiks -= 40
+                                food = Food(path + 'bug.png', 340, 370, 150, 150, 20)
+                                spritegroup.append(food)
+                            else:
+                                pass
+                        if selected == 'sworm':
+                            if logiks >= 30:
+                                logiks -= 30
+                                food = Food(path + 'sworm.png', screen_width / 2.5, 360, 150, 150, 15)
+                                spritegroup.append(food)
+                            else:
+                                pass
+        elif fridge_screen == True:
+            screen.blit(backrounds[3],(0,0))
+            if selected == "return":
+                text_return = text_format("назад", font, 55, yellow)
+            else:
+                text_return = text_format("назад", font, 55, black)
+            screen.blit(text_return, (50, 0,))
+            return_rect = Rect(50, 0, 100, 40)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    game = False
+                mouse_pos = pygame.mouse.get_pos()
+                if return_rect.collidepoint(mouse_pos):
+                    selected = 'return'
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    mouse_pos = event.pos
+                    if selected == 'return':
+                        fridge_screen = False
+
+        elif pharmacy_screen == True:
+            screen.blit(backrounds[4],(0,0))
+            if selected == "return":
+                text_return = text_format("назад", font, 55, yellow)
+            else:
+                text_return = text_format("назад", font, 55, black)
+            screen.blit(text_return, (50, 0,))
+            return_rect = Rect(50, 0, 100, 40)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    game = False
+                mouse_pos = pygame.mouse.get_pos()
+                if return_rect.collidepoint(mouse_pos):
+                    selected = 'return'
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    mouse_pos = event.pos
+                    if selected == 'return':
+                        pharmacy_screen = False
+        pygame.display.update()
